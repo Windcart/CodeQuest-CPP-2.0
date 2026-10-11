@@ -1,0 +1,6 @@
+import {byId} from './curriculum.js';
+export const KEY='codequest-cpp-v2';
+export const fresh=()=>({version:2,completed:{},drafts:{},last:'b0-0'});
+export function valid(d){return d&&d.version===2&&byId[d.last]&&d.completed&&typeof d.completed==='object'&&!Array.isArray(d.completed)&&Object.entries(d.completed).every(([k,v])=>byId[k]&&v&&typeof v==='object'&&typeof v.independent==='boolean')&&d.drafts&&typeof d.drafts==='object'&&!Array.isArray(d.drafts)&&Object.entries(d.drafts).every(([k,v])=>(byId[k]||['playRobot','playCpp'].includes(k))&&typeof v==='string'&&v.length<=50000);}
+export function migrate(old){const d=fresh();if(!old||!Array.isArray(old.completed)||!old.completed.every(n=>Number.isInteger(n)&&n>=0&&n<20))throw Error('Invalid backup');for(const i of old.completed)d.completed['b'+i+'-0']={independent:false,imported:true};if(old.language==='cpp'&&old.drafts)for(const [k,v]of Object.entries(old.drafts)){if(/^\d+$/.test(k)&&+k<20&&typeof v==='string'&&v.length<=50000)d.drafts['b'+k+'-0']=v;}if(Number.isInteger(old.last)&&old.last>=0&&old.last<20)d.last='b'+old.last+'-0';return d;}
+export function merge(a,b){const d={version:2,last:b.last,drafts:{...a.drafts,...b.drafts},completed:{...a.completed}};for(const [k,v]of Object.entries(b.completed))d.completed[k]={...v,independent:!!(v.independent||a.completed[k]?.independent)};return d;}
